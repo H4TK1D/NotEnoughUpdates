@@ -723,6 +723,7 @@ public class NEUOverlay extends Gui {
 	 */
 	public void showInfo(JsonObject item) {
 		if (item.has("info") && item.has("infoType")) {
+			NotEnoughUpdates.LOGGER.info(item.toString());
 			JsonArray lore = item.get("info").getAsJsonArray();
 			String infoType = item.get("infoType").getAsString();
 			String infoText = "";

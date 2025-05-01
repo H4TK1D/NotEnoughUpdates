@@ -29,6 +29,7 @@ import info.bliki.wiki.tags.HTMLTag;
 import info.bliki.wiki.tags.IgnoreTag;
 import io.github.moulberry.notenoughupdates.NEUManager;
 import io.github.moulberry.notenoughupdates.NEUOverlay;
+import io.github.moulberry.notenoughupdates.NotEnoughUpdates;
 import io.github.moulberry.notenoughupdates.util.AllowEmptyHTMLTag;
 import io.github.moulberry.notenoughupdates.util.Utils;
 import net.minecraft.client.Minecraft;
@@ -41,6 +42,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
+import scala.tools.nsc.transform.patmat.Logic;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -55,6 +57,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.CharsetEncoder;
@@ -65,6 +68,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HTMLInfoPane extends TextInfoPane {
@@ -192,17 +196,19 @@ public class HTMLInfoPane extends TextInfoPane {
 		if (isOfficialWiki) {
 			wiki = wiki.split("<main id=\"content\" class=\"mw-body\">")[1].split("</main>")[0]; // hide top bar
 			wiki = wiki.split("<div class=\"container-navbox\">")[0]; // hide giant bottom list
-			wiki = wiki.split("<div class=\"categoryboxcontainer\">")[0]; // hide small bottom category thing
+			wiki = wiki.split("<div class=\"categoryboxcontainer\">")[0];// hide small bottom category thing
+			wiki = wiki.replaceAll("(?i)<link\\s+[^>]*href=[\"'](?!https?://|//)(/)?([^\"'>]+)[\"']", "<link href=\"https://wiki.hypixel.net/$2\"");
 			wiki = replacePattern.matcher(wiki).replaceAll("");
 			wiki = wiki.replaceAll(
 				"<div id=\"siteNotice\"></div><div id=\"mw-dismissablenotice-anonplace\"></div><script>.*</script>",
 				""
 			); // hide beta box
-			wiki = wiki.replaceAll("<h1 id=\"section_0\">.*</h1>", ""); // hide title
+			wiki = wiki.replaceAll("<h1[^>]*id=\"firstHeading\"[^>]*>.*?</h1>", ""); // hide title
 			wiki = wiki.replace("src=\"/", "src=\"https://wiki.hypixel.net/");
 			wiki = wiki.replace("\uD83D\uDDF8", "✓"); // replace checkmark with one that renders
 			wiki = wiki.replace("\uD83E\uDC10", "\u27F5"); // replace left arrow with one that renders
 			wiki = wiki.replace("\uD83E\uDC12", "\u27F6"); // replace right arrow with one that renders
+			NotEnoughUpdates.LOGGER.info(wiki);
 		} else {
 			String[] split = wiki.split("</infobox>");
 			wiki = split[split.length - 1]; //Remove everything before infobox
